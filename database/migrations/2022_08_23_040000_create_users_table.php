@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('url')->default('blank.jpg');
+            $table->string('nip')->unique();
+            $table->unsignedBigInteger('division_code')->index();
+            $table->foreign('division_code')->references('id')->on('m_divisions')->onDelete('cascade');
+            $table->unsignedBigInteger('position_code')->index();
+            $table->foreign('position_code')->references('id')->on('m_positions')->onDelete('cascade');
+            $table->unsignedBigInteger('plant_code')->index();
+            $table->foreign('plant_code')->references('id')->on('sap_m_plants')->onDelete('cascade');
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('users');
+    }
+};
