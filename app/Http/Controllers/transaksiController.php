@@ -9,6 +9,9 @@ use App\Models\sap_t_bpm;
 use App\Models\sap_t_bpm_dtl;
 use App\Models\sap_t_gi;
 use App\Models\sap_t_gi_dtl;
+use App\Models\sap_m_materials;
+use App\Models\sap_m_project;
+use App\Models\sap_m_wbs;
 
 class transaksiController extends Controller
 {
@@ -19,10 +22,10 @@ class transaksiController extends Controller
      */
     public function index()
     {
-        return view("transaksi",[
-            'sttp' => sap_t_sttp::withCount('details')->orderBy('doc_date','DESC')->get(),
-            'bpm'  => sap_t_bpm::withCount('details')->orderBy('doc_date','DESC')->get(),
-            'gi'   => sap_t_gi_dtl::join('sap_t_gis','gi_id','=','sap_t_gis.id')->orderBy('doc_date','DESC')->get(),
+        return view("transaksi", [
+            'sttp' => sap_t_sttp::withCount('details')->orderBy('doc_date', 'DESC')->get(),
+            'bpm'  => sap_t_bpm::withCount('details')->orderBy('doc_date', 'DESC')->get(),
+            'gi'   => sap_t_gi_dtl::join('sap_t_gis', 'gi_id', '=', 'sap_t_gis.id')->orderBy('doc_date', 'DESC')->get(),
             'title' => "Transaction"
         ]);
     }
@@ -34,26 +37,52 @@ class transaksiController extends Controller
      */
     public function sttpdetail($id)
     {
-        return view("sttpdetail",[
-            'sttp' => sap_t_sttp_dtl::where('sttp_id',$id)->get(),
+        return view("sttpdetail", [
+            'sttp' => sap_t_sttp_dtl::where('sttp_id', $id)->get(),
             'id' => $id,
             'title' => "Transaction Detail STTP"
-        ]);   
+        ]);
     }
     public function bpmdetail($id)
     {
-        return view("bpmdetail",[
-            'bpm'  => sap_t_bpm_dtl::where('bpm_id',$id)->get(),
+        return view("bpmdetail", [
+            'bpm'  => sap_t_bpm_dtl::where('bpm_id', $id)->get(),
             'id' => $id,
             'title' => "Transaction Detail BPM"
         ]);
     }
     public function gidetail($id)
     {
-        return view("gidetail",[
-            'gi'   => sap_t_gi_dtl::where('id',$id)->get(),
+        return view("gidetail", [
+            'gi'   => sap_t_gi_dtl::where('id', $id)->get(),
             'id' => $id,
             'title' => "Transaction Detail BPRM"
+        ]);
+    }
+
+    public function newtransaksi()
+    {
+        return view("newtrans", [
+            'title' => "New Transaction",
+            'data_material' => sap_m_materials::all(),
+            'data_project' => sap_m_project::all(),
+            'data_wbs' => sap_m_wbs::all(),
+
+        ]);
+    }
+
+    public function newtransaksiprocess() {
+
+        $faker = Faker\Factory::create();
+        $sttp = new sap_t_sttp;
+        $sttp->doc_date = 
+        $sttp->doc_no =
+    }
+
+    public function createSTTP()
+    {
+        return view("newsttp", [
+            'title' => "New STTP"
         ]);
     }
 

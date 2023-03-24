@@ -2,14 +2,14 @@
 <nav class="main-header navbar navbar-expand navbar-white navbar-light">
   <!-- Left navbar links -->
   <ul class="navbar-nav">
-    
 
-  
-        
+
+
+
     <li class="nav-item">
       <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
     </li>
-   
+
   </ul>
 
   <!-- Right navbar links -->
@@ -80,12 +80,27 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="/transaksi" class="nav-link">
+          <a href="/" class="nav-link">
             <i class="nav-icon fas fa-book"></i>
             <p>
-              Transaction
+              Transactions
+              <i class="right fas fa-angle-left"></i>
             </p>
           </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="/new-transaksi" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>New Transaction</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/transaksi" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Transaction List</p>
+              </a>
+            </li>
+          </ul>
         </li>
         @cannot('Admin')
         <li class="nav-item">
