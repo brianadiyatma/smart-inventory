@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('sap_t_sttps', function (Blueprint $table) {
             $table->id();
-            $table->string('pembuat')->nullable();
+            $table->string('pembuat')->Auth::user()->name();
             $table->string('doc_number');
             $table->date('doc_date');
             $table->string('po_number')->nullable();            

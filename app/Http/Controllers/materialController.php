@@ -28,13 +28,13 @@ class materialController extends Controller
      */
     public function index()
     {
-        // $aa = t_stock::join('sap_m_plants','plant_code','=','sap_m_plants.plant_code')->get();
-        $a = t_stock::all();
-        // $data = DataTables::of($a)->addIndexColumn()->toJson();
-
         return view('materialstock',[
             'title' => "Material Stock",
-            'data' => t_stock::all()
+            'data' => t_stock::join('sap_m_plants', 't_stocks.plant_code', '=', 'sap_m_plants.plant_code')
+                 ->join('sap_m_storage_locations', 't_stocks.storloc_code', '=', 'sap_m_storage_locations.storage_location_code')
+                 ->join('sap_m_storage_types', 't_stocks.storage_type_code', '=', 'sap_m_storage_types.storage_type_code')
+                 ->select('t_stocks.*', 'sap_m_plants.plant_name as plant_code', 'sap_m_storage_locations.storage_location_name as storloc_code', 'sap_m_storage_types.storage_type_name as storage_type_code')
+                 ->get()
         ]);
     }
 

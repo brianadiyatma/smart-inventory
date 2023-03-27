@@ -27,11 +27,11 @@
                     <div class="active tab-pane" id="activity">
 
                       <div class="row card-body">
-                            <label class="col-sm-2">WBS</label>
+                            <label class="col-sm-2">Project</label>
                             <div class="col-sm-10">
-                                <select class="select2bs4 form-control" name="wbs">
-                                    @foreach($data_wbs as $item)
-                                    <option value="{{ $item->wbs_code }}">{{ $item->wbs_desc }} : {{ $item->wbs_code }}</option>
+                                <select class="select2bs4 form-control" name="project">
+                                    @foreach($data_project as $item)
+                                    <option value={{ $item->project_code }}>{{ $item->project_desc }} : {{ $item->project_code }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -40,21 +40,46 @@
                         {{-- Start of Left Section --}}
                         <div class="w-50">
                             <form action="#">
-                        <div class="row">
-                            <div class="col-md-10">
+                              <!-- start -->
+                              <div>
                                 <label>Material</label>
                                  <select class="select2bs4 form-control" style="width: 100%;" name="material">
                                     @foreach($data_material as $item)
                                     <option value="{{ $item->material_code }}">{{ $item->material_desc }} : {{ $item->material_code }}</option>
                                     @endforeach
                                 </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label>Quantity</label>
-                                <input type="number" name="quantity" class="form-control">
-                            </div>
+                               </div>
+                              <!-- end -->
+                              <div>
+                                <label>WBS</label>
+                                <select class="select2bs4 form-control" style="width: 100%;" name="wbs">
+                                    @foreach($data_wbs as $item)
+                                    <option value="{{ $item->wbs_code }}">{{ $item->wbs_desc }} : {{ $item->wbs_code }}</option>
+                                    @endforeach
+                                </select>
+                              </div>
+                              <div>
+                                <label>Quantity PO</label>
+                                <input type="number" name="qtypo" class="form-control">
+                              </div>
+                              <div>
+                                <label>Quantity LPPB</label>
+                                <input type="number" name="qtylppb" class="form-control">
+                              </div>
+                              <div>
+                                <label>Quantity NCR</label>
+                                <input type="number" name="qtyncr" class="form-control">
+                              </div>
 
-                        </div>
+                              <div>
+                                <label>UOM</label>
+                                <select class="select2bs4 form-control" style="width: 100%;" name="uom">
+                                    @foreach($data_UOM as $item)
+                                    <option value="{{ $item->id }}">{{ $item->uom_name}} : {{ $item->uom_code }}</option>
+                                    @endforeach
+                                </select>
+                              </div>
+                        
                             <div class="my-4" style="float: right;">
                                 <button class="btn btn-primary" id='add-sttp'>Add</button>
                             </div>
@@ -67,10 +92,14 @@
                                     <table class="table table-bordered table-responsive table-hover display" id="sttp-table">
                                         <thead>
                                             <tr>
-                                            <th>No.</th>
+                                            <!-- <th>No.</th> -->
                                             <th>Material</th>
-                                            <th>Quantity</th>
-                                            <th>Action</th>
+                                            <th>WBS</th>
+                                            <th>QTY PO</th>
+                                            <th>QTY LPPB</th>
+                                            <th>QTY NCR</th>
+                                            <th>UOM</th>
+                                           
                                             </tr>
                                         </thead>
                                         <tbody id='sttp-tbody'>
@@ -121,13 +150,27 @@ $(document).ready(function() {
       theme: 'bootstrap4'
     })
 
-    $('#sttp-table').dataTable( {
-        "searching": false
-
-    } );
+   
 
     let items = [];
-
+    $('#sttp-table').dataTable( {
+        "searching": false,
+        "paging": false,
+        "data": items,
+        "columns": [
+            
+            { "data": "material_code" },
+            { "data": "wbs_code" },
+            { "data": "qtypo" },
+            { "data": "qtylppb" },
+            { "data": "qtyncr" },
+            { "data": "uom" },
+               
+        ]
+        
+        
+       
+    } );
     const rendertbodysttp = () => {
         let html = '';
         items.forEach((item, index) => {
@@ -135,7 +178,11 @@ $(document).ready(function() {
                 <tr>
                     <td>${index + 1}</td>
                     <td>${item.material_code}</td>
-                    <td>${item.quantity}</td>
+                    <td>${item.wbs_code}</td>
+                    <td>${item.qtypo}</td>
+                    <td>${item.qtylppb}</td>
+                    <td>${item.qtyncr}</td>
+                    <td>${item.uom}</td>
                     <td><button class="btn btn-danger" id='sttp-${index}'>Delete</button></td>
                 </tr>
             `;
@@ -158,28 +205,43 @@ $(document).ready(function() {
         'click', function(e) {
             e.preventDefault();
             var material = $('select[name="material"]').val();
-            var quantity = $('input[name="quantity"]').val();
+            var wbs = $('select[name="wbs"]').val();
+            var qtypo = $('input[name="qtypo"]').val();
+            var qtylppb = $('input[name="qtylppb"]').val();
+            var qtyncr = $('input[name="qtyncr"]').val();
+            var uom = $('select[name="uom"]').val();
+            
 
             items.push({
                 material_code: material,
-                quantity: quantity
+                wbs_code: wbs,
+                qtypo : qtypo,
+                qtylppb : qtylppb,
+                qtyncr : qtyncr,
+                uom : uom
             });
 
-            $('#sttp-tbody').html(rendertbodysttp());
+            $('#sttp-table').dataTable().fnClearTable();
+            $('#sttp-table').dataTable().fnAddData(items);
 
-            console.log(items);
+
+            // console.log(items);
+
+            // $('#sttp-tbody').html(rendertbodysttp());
+
+            // console.log(items);
         }
     )
 
     //ajax submit sttp
     $('#submit-sttp').on('click', function(e) {
         e.preventDefault();
-        var wbs = $('select[name="wbs"]').val();
+        var project = $('select[name="project"]').val();
         var data = {
-            wbs: wbs,
+            project: project,
             items: items
         };
-
+        console.log(data);
         $.ajax({
             url: '/new-transaksi',
             type: 'POST',
@@ -188,6 +250,9 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(data) {
+                console.log(data);
+            },
+            error: function(data) {
                 console.log(data);
             }
         });
