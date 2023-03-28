@@ -28,18 +28,6 @@ class FileController extends Controller
         $file = File::get($path);
         $contents = Storage::disk('myDisk')->url('NeutralA0000.jpg');
         return '<img src="data:image/'.$type.';base64,'.base64_encode($file).'"/>';
-
-
-        
-        // try {
-        //     $file = File::get($path);
-        //     $type = File::mimeType($path);
-        //     $response = Response::make($file, 200);
-        //     $response->header("Content-Type", $type);
-        //     return $response;
-        // } catch (FileNotFoundException $exception) {
-        //     abort(404);
-        // }
     }
 
     public function getQrCode(Request $request){             

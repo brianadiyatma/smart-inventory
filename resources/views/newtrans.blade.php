@@ -141,6 +141,7 @@
 
 
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
 $(document).ready(function() {
      $('.select2').select2()
@@ -201,6 +202,12 @@ $(document).ready(function() {
     });
 
 
+     const clearMaterialForm = () => {
+        $('input[name="qtypo"]').val('');
+        $('input[name="qtylppb"]').val('');
+        $('input[name="qtyncr"]').val('');
+    }
+
     $('#add-sttp').on(
         'click', function(e) {
             e.preventDefault();
@@ -221,6 +228,8 @@ $(document).ready(function() {
                 uom : uom
             });
 
+            clearMaterialForm();
+
             $('#sttp-table').dataTable().fnClearTable();
             $('#sttp-table').dataTable().fnAddData(items);
 
@@ -233,6 +242,18 @@ $(document).ready(function() {
         }
     )
 
+       
+    const clearAllForm = () => {
+        $('input[name="qtypo"]').val('');
+        $('input[name="qtylppb"]').val('');
+        $('input[name="qtyncr"]').val('');
+        items = [];
+        $('#sttp-table').dataTable().fnClearTable();
+
+
+      }
+
+    
     //ajax submit sttp
     $('#submit-sttp').on('click', function(e) {
         e.preventDefault();
@@ -250,7 +271,12 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(data) {
-                console.log(data);
+                Swal.fire('Data Berhasil Ditambahkan').then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/transaksi';
+                    }
+                });
+                clearAllForm();
             },
             error: function(data) {
                 console.log(data);
