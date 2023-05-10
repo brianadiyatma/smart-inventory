@@ -93,8 +93,5 @@ Route::get('/resetpass', [App\Http\Controllers\mainController::class, 'forgot'])
 
 Route::get('/file', [App\Http\Controllers\FileController::class, 'store']);
 Route::get('/get-file', [App\Http\Controllers\FileController::class, 'getFile']);
-Route::get('/dd', function (Request $request) {
-    $dad = \App\Models\sap_m_wbs::all()->pluck('id', 'wbs_desc');
-});
 
 Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index']);

@@ -58,27 +58,28 @@
                                     @endforeach
                                 </select>
                               </div>
-                              <div>
-                                <label>Quantity PO</label>
-                                <input type="number" name="qtypo" class="form-control">
-                              </div>
-                              <div>
-                                <label>Quantity LPPB</label>
-                                <input type="number" name="qtylppb" class="form-control">
-                              </div>
-                              <div>
-                                <label>Quantity NCR</label>
-                                <input type="number" name="qtyncr" class="form-control">
-                              </div>
-
-                              <div>
+                               <div>
                                 <label>UOM</label>
-                                <select class="select2bs4 form-control" style="width: 100%;" name="uom">
+                                <select class="select2bs4 form-control" style="width: 30%;" name="uom">
                                     @foreach($data_UOM as $item)
                                     <option value="{{ $item->id }}">{{ $item->uom_name}} : {{ $item->uom_code }}</option>
                                     @endforeach
                                 </select>
                               </div>
+                              <div>
+                                <label>Quantity PO</label>
+                                <input type="number" name="qtypo" class="form-control" style="width: 30%;">
+                              </div>
+                              <div>
+                                <label>Quantity LPPB</label>
+                                <input type="number" name="qtylppb" class="form-control" style="width: 30%;">
+                              </div>
+                              <div>
+                                <label>Quantity NCR</label>
+                                <input type="number" name="qtyncr" class="form-control" style="width: 30%;">
+                              </div>
+
+                             
                         
                             <div class="my-4" style="float: right;">
                                 <button class="btn btn-primary" id='add-sttp'>Add</button>
@@ -141,6 +142,7 @@
 
 
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
 $(document).ready(function() {
      $('.select2').select2()
@@ -201,6 +203,12 @@ $(document).ready(function() {
     });
 
 
+     const clearMaterialForm = () => {
+        $('input[name="qtypo"]').val('');
+        $('input[name="qtylppb"]').val('');
+        $('input[name="qtyncr"]').val('');
+    }
+
     $('#add-sttp').on(
         'click', function(e) {
             e.preventDefault();
@@ -221,6 +229,8 @@ $(document).ready(function() {
                 uom : uom
             });
 
+            clearMaterialForm();
+
             $('#sttp-table').dataTable().fnClearTable();
             $('#sttp-table').dataTable().fnAddData(items);
 
@@ -233,6 +243,18 @@ $(document).ready(function() {
         }
     )
 
+       
+    const clearAllForm = () => {
+        $('input[name="qtypo"]').val('');
+        $('input[name="qtylppb"]').val('');
+        $('input[name="qtyncr"]').val('');
+        items = [];
+        $('#sttp-table').dataTable().fnClearTable();
+
+
+      }
+
+    
     //ajax submit sttp
     $('#submit-sttp').on('click', function(e) {
         e.preventDefault();
@@ -250,7 +272,12 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(data) {
-                console.log(data);
+                Swal.fire('Data Berhasil Ditambahkan').then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/transaksi';
+                    }
+                });
+                clearAllForm();
             },
             error: function(data) {
                 console.log(data);
