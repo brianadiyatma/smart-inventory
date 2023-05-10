@@ -58,27 +58,28 @@
                                     @endforeach
                                 </select>
                               </div>
-                              <div>
-                                <label>Quantity PO</label>
-                                <input type="number" name="qtypo" class="form-control">
-                              </div>
-                              <div>
-                                <label>Quantity LPPB</label>
-                                <input type="number" name="qtylppb" class="form-control">
-                              </div>
-                              <div>
-                                <label>Quantity NCR</label>
-                                <input type="number" name="qtyncr" class="form-control">
-                              </div>
-
-                              <div>
+                               <div>
                                 <label>UOM</label>
-                                <select class="select2bs4 form-control" style="width: 100%;" name="uom">
+                                <select class="select2bs4 form-control" style="width: 30%;" name="uom">
                                     @foreach($data_UOM as $item)
                                     <option value="{{ $item->id }}">{{ $item->uom_name}} : {{ $item->uom_code }}</option>
                                     @endforeach
                                 </select>
                               </div>
+                              <div>
+                                <label>Quantity PO</label>
+                                <input type="number" name="qtypo" class="form-control" style="width: 30%;">
+                              </div>
+                              <div>
+                                <label>Quantity LPPB</label>
+                                <input type="number" name="qtylppb" class="form-control" style="width: 30%;">
+                              </div>
+                              <div>
+                                <label>Quantity NCR</label>
+                                <input type="number" name="qtyncr" class="form-control" style="width: 30%;">
+                              </div>
+
+                             
                         
                             <div class="my-4" style="float: right;">
                                 <button class="btn btn-primary" id='add-sttp'>Add</button>
