@@ -32,19 +32,27 @@
                     <div class="form-group row">
                       <label for="" class="col-sm-2 col-form-label">Pemeriksa</label>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="pemeriksa" placeholder="Nama" required>
+                      <select class="select2bs4 form-control" style="width: 100%;" name="uom" required required name="pemeriksa">
+                                    @foreach($data as $item)
+                                    <option value="{{ $item->position_code }}">{{ $item->name}}</option>
+                                    @endforeach
+                                </select> 
                       </div>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="jabatan_pemeriksa" placeholder="Jabatan" required>
+                      <input class="form-control" type="" name="jabatan_pemeriksa" placeholder="Jabatan" required disabled>
                       </div>
                     </div>
                     <div class="form-group row">
                       <label for="" class="col-sm-2 col-form-label">Pengesah</label>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="pengesah" placeholder="Nama" required>
+                      <select class="select2bs4 form-control" style="width: 100%;" name="uom" required required name="pengesah">
+                                    @foreach($data as $item)
+                                    <option value="{{ $item->position_code }}">{{ $item->name}}</option>
+                                    @endforeach
+                                </select> 
                       </div>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="jabatan_pengesah" placeholder="Jabatan" required>
+                      <input class="form-control" type="" name="jabatan_pengesah" placeholder="Jabatan" required disabled>
                       </div>
                     </div>
                     <div class="form-group row">

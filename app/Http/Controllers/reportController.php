@@ -142,11 +142,15 @@ class reportController extends Controller
             'title' => "Report Inbound & Outbound",
             'data' => $unitrans
         ]);
-    }
+    }   
 
     public function generate(){
+        $user = User::join('m_positions','users.position_code','=','m_positions.position_code')->get();
+
+
         return view('generate',[
             'title' => "Report",
+            'data'=> $user
         ]);   
     }
 
