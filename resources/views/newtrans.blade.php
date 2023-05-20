@@ -29,10 +29,18 @@
                       <div class="row card-body">
                             <label class="col-sm-2">Project</label>
                             <div class="col-sm-10">
-                                <select class="select2bs4 form-control" name="project">
+                                <select class="select2bs4 form-control" name="project" id="project_form">
                                     @foreach($data_project as $item)
                                     <option value={{ $item->project_code }}>{{ $item->project_desc }} : {{ $item->project_code }}</option>
                                     @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row card-body">
+                            <label class="col-sm-2">WBS</label>
+                            <div class="col-sm-10">
+                                <select class="select2bs4 form-control" style="width: 100%;" name="wbs">
+                                    <option value="">-- Pilih Project --</option>
                                 </select>
                             </div>
                         </div>
@@ -43,27 +51,18 @@
                               <!-- start -->
                               <div>
                                 <label>Material</label>
-                                 <select class="select2bs4 form-control" style="width: 100%;" name="material">
+                                 <select class="select2bs4 form-control" style="width: 100%;" name="material" id="material">
+                                    <option>-- Pilih Material --</option>
                                     @foreach($data_material as $item)
                                     <option value="{{ $item->material_code }}">{{ $item->material_desc }} : {{ $item->material_code }}</option>
                                     @endforeach
                                 </select>
                                </div>
                               <!-- end -->
-                              <div>
-                                <label>WBS</label>
-                                <select class="select2bs4 form-control" style="width: 100%;" name="wbs">
-                                    @foreach($data_wbs as $item)
-                                    <option value="{{ $item->wbs_code }}">{{ $item->wbs_desc }} : {{ $item->wbs_code }}</option>
-                                    @endforeach
-                                </select>
-                              </div>
                                <div>
                                 <label>UOM</label>
-                                <select class="select2bs4 form-control" style="width: 30%;" name="uom">
-                                    @foreach($data_UOM as $item)
-                                    <option value="{{ $item->id }}">{{ $item->uom_name}} : {{ $item->uom_code }}</option>
-                                    @endforeach
+                                <select class="select2bs4 form-control" @readonly(true) style="width: 30%;" name="uom" id="uom" disabled>
+                                    <option>-- Pilih Material --</option>
                                 </select>
                               </div>
                               <div>
@@ -71,16 +70,13 @@
                                 <input type="number" name="qtypo" class="form-control" style="width: 30%;">
                               </div>
                               <div>
-                                <label>Quantity LPPB</label>
+                                <label>Quantity ACTUAL</label>
                                 <input type="number" name="qtylppb" class="form-control" style="width: 30%;">
                               </div>
                               <div>
-                                <label>Quantity NCR</label>
+                                <label>Quantity RETURN</label>
                                 <input type="number" name="qtyncr" class="form-control" style="width: 30%;">
                               </div>
-
-                             
-                        
                             <div class="my-4" style="float: right;">
                                 <button class="btn btn-primary" id='add-sttp'>Add</button>
                             </div>
@@ -90,23 +86,18 @@
                         {{-- start of right section --}}
                         <div style="width: 40%; margin-left: auto">
                                 <div>
-                                    <table class="table table-bordered table-responsive table-hover display" id="sttp-table">
+                                    <table class="table table-bordered table-responsive table-hover display" style="width:100%" id="sttp-table">
                                         <thead>
                                             <tr>
                                             <!-- <th>No.</th> -->
                                             <th>Material</th>
-                                            <th>WBS</th>
                                             <th>QTY PO</th>
-                                            <th>QTY LPPB</th>
-                                            <th>QTY NCR</th>
+                                            <th>QTY ACTUAL</th>
+                                            <th>QTY RETURN</th>
                                             <th>UOM</th>
-                                           
                                             </tr>
                                         </thead>
                                         <tbody id='sttp-tbody'>
-
-
-
                                         </tbody>
                                     </table>
                             </div>
@@ -152,7 +143,7 @@ $(document).ready(function() {
       theme: 'bootstrap4'
     })
 
-   
+
 
     let items = [];
     $('#sttp-table').dataTable( {
@@ -160,18 +151,16 @@ $(document).ready(function() {
         "paging": false,
         "data": items,
         "columns": [
-            
+
             { "data": "material_code" },
-            { "data": "wbs_code" },
             { "data": "qtypo" },
             { "data": "qtylppb" },
             { "data": "qtyncr" },
             { "data": "uom" },
-               
         ]
-        
-        
-       
+
+
+
     } );
     const rendertbodysttp = () => {
         let html = '';
@@ -180,7 +169,6 @@ $(document).ready(function() {
                 <tr>
                     <td>${index + 1}</td>
                     <td>${item.material_code}</td>
-                    <td>${item.wbs_code}</td>
                     <td>${item.qtypo}</td>
                     <td>${item.qtylppb}</td>
                     <td>${item.qtyncr}</td>
@@ -207,22 +195,22 @@ $(document).ready(function() {
         $('input[name="qtypo"]').val('');
         $('input[name="qtylppb"]').val('');
         $('input[name="qtyncr"]').val('');
+        $('select[name="uom"]').val('');
     }
 
+    var uom;
     $('#add-sttp').on(
         'click', function(e) {
             e.preventDefault();
             var material = $('select[name="material"]').val();
-            var wbs = $('select[name="wbs"]').val();
             var qtypo = $('input[name="qtypo"]').val();
             var qtylppb = $('input[name="qtylppb"]').val();
             var qtyncr = $('input[name="qtyncr"]').val();
-            var uom = $('select[name="uom"]').val();
-            
+            console.log(uom);
+
 
             items.push({
                 material_code: material,
-                wbs_code: wbs,
                 qtypo : qtypo,
                 qtylppb : qtylppb,
                 qtyncr : qtyncr,
@@ -243,7 +231,7 @@ $(document).ready(function() {
         }
     )
 
-       
+
     const clearAllForm = () => {
         $('input[name="qtypo"]').val('');
         $('input[name="qtylppb"]').val('');
@@ -254,14 +242,63 @@ $(document).ready(function() {
 
       }
 
-    
+$('#project_form').on('change', function(e) {
+        e.preventDefault();
+        var project = $(this).val();
+        $.ajax({
+            url:'/get-wbs/'+ project,
+            type:'GET',
+            success:function(data){
+                console.log(data+project);
+                $('select[name="wbs"]').empty();
+                $('select[name="wbs"]').append('<option value="">-- Pilih WBS --</option>');
+                $.each(data.data, function(key, value){
+                    $('select[name="wbs"]').append('<option value="'+ value.wbs_code +'">'+ value.wbs_desc + ' : ' + value.wbs_code +'</option>');
+                });
+            },
+            error:function(){
+                Swal.fire('Data Gagal Tidak Ditemukan ').then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/new-transaksi';
+                    }
+                });
+            }
+        });
+        });
+
+
+        $('#material').on('change', function (e) {
+    e.preventDefault();
+    var material = $(this).val();
+
+    $.ajax({
+        url: '/get-uom/' + material,
+        type: 'GET',
+        success: function (data) {
+            uom =  data.data.uom_name + ' : ' + data.data.uom_code;
+            $('select[name="uom"]').empty();
+            $('select[name="uom"]').append('<option value="' + data.data.id + '">' + data.data.uom_name + ' : ' + data.data.uom_code + '</option>');
+        },
+        error: function () {
+            Swal.fire('Data Gagal Tidak Ditemukan ').then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/new-transaksi';
+                }
+            });
+        }
+    })
+ });
+
     //ajax submit sttp
     $('#submit-sttp').on('click', function(e) {
         e.preventDefault();
         var project = $('select[name="project"]').val();
+        var wbs = $('select[name="wbs"]').val();
         var data = {
             project: project,
+            wbs:wbs,
             items: items
+
         };
         console.log(data);
         $.ajax({
@@ -280,7 +317,11 @@ $(document).ready(function() {
                 clearAllForm();
             },
             error: function(data) {
-                console.log(data);
+                Swal.fire('Data Gagal Ditambahkan').then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/transaksi';
+                    }
+                });
             }
         });
     });

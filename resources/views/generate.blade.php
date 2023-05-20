@@ -32,19 +32,27 @@
                     <div class="form-group row">
                       <label for="" class="col-sm-2 col-form-label">Pemeriksa</label>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="pemeriksa" placeholder="Nama" required>
+                      <select class="select2bs4 form-control" style="width: 100%;" required  name="pemeriksa" id="pemeriksa">
+                                    @foreach($data as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name}}</option>
+                                    @endforeach
+                                </select>
                       </div>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="jabatan_pemeriksa" placeholder="Jabatan" required>
+                      <input class="form-control" type="" name="jabatan_pemeriksa" placeholder="Jabatan" required disabled>
                       </div>
                     </div>
                     <div class="form-group row">
                       <label for="" class="col-sm-2 col-form-label">Pengesah</label>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="pengesah" placeholder="Nama" required>
+                      <select class="select2bs4 form-control" style="width: 100%;"required name="pengesah" id="pengesah">
+                                    @foreach($data as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name}}</option>
+                                    @endforeach
+                                </select>
                       </div>
                       <div class="col-sm-5">
-                      <input class="form-control" type="" name="jabatan_pengesah" placeholder="Jabatan" required>
+                      <input class="form-control" type="" name="jabatan_pengesah" placeholder="Jabatan" required disabled>
                       </div>
                     </div>
                     <div class="form-group row">
@@ -91,7 +99,7 @@
 
 <script type="text/javascript">
   $('.qrcode').click(function(){
-    
+
     var qr = $(this).attr('data-qr')
 
     $.ajax({
@@ -119,7 +127,36 @@
     $('.select2bs4').select2({
       theme: 'bootstrap4'
     })
-  });
+
+    $('#pemeriksa').on('change', function (e) {
+        e.preventDefault();
+        var id = $(this).val();
+        $.ajax({
+            type: "GET",
+            url: "/get-jabatan/"+id,
+            success: function (data) {
+                console.log(data);
+                $('input[name="jabatan_pemeriksa"]').val(data.data.position_name);
+            }
+        });
+     })
+    $('#pengesah').on('change', function (e) {
+        e.preventDefault();
+        var id = $(this).val();
+        $.ajax({
+            type: "GET",
+            url: "/get-jabatan/"+id,
+            success: function (data) {
+                console.log(data);
+                $('input[name="jabatan_pengesah"]').val(data.data.position_name);
+            }
+        });
+     })
+
+});
+
+
+
 </script>
 
 

@@ -84,6 +84,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/{id}', 'App\Http\Controllers\profileController@profile');
     Route::post('/editprofile', 'App\Http\Controllers\profileController@editprofile');
     Route::post('/editpassword', 'App\Http\Controllers\profileController@editpassword');
+
+    Route::get('/get-wbs/{projectid}', 'App\Http\Controllers\proyekController@wbs');
+    Route::get('/get-uom/{materialid}', 'App\Http\Controllers\materialController@get_uom');
+    Route::get('/get-jabatan/{id}', 'App\Http\Controllers\profileController@get_jabatan');
 });
 
 Auth::routes();

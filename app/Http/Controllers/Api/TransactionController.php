@@ -287,7 +287,7 @@ class TransactionController extends Controller
     {
         try {
             $sttp = sap_t_sttp::findOrFail($request->id);
-                
+
             $sttp->status = 'PROCESSED';
             $sttp->finished_at = now();
             $sttp->update();

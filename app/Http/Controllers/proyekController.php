@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\sap_m_project;
+use App\Models\sap_m_wbs;
 
 class proyekController extends Controller
 {
@@ -14,7 +15,7 @@ class proyekController extends Controller
      */
     public function index()
     {
-        return view('proyek',[
+        return view('proyek', [
             'title' => "Project",
             'data' => sap_m_project::all()
         ]);
@@ -84,5 +85,17 @@ class proyekController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function wbs($projectid)
+    {
+        $project = sap_m_project::where('project_code', $projectid)->first();
+
+
+        return response()->json(
+            [
+                'data' => sap_m_wbs::where('project_id', $project->id)->get()
+            ]
+        );
     }
 }

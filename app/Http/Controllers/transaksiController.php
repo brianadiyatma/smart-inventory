@@ -16,6 +16,7 @@ use App\Models\sap_m_uoms;
 use Faker\Generator;
 use Carbon\Carbon;
 use Auth;
+use Illuminate\Support\Facades\DB;
 
 class transaksiController extends Controller
 {
@@ -41,8 +42,10 @@ class transaksiController extends Controller
      */
     public function sttpdetail($id)
     {
+        $sttp = sap_t_sttp_dtl::where('sttp_id', $id)
+            ->join('sap_m_uoms', 'sap_t_sttp_dtls.uom', '=', 'sap_m_uoms.id',)->get();  
         return view("sttpdetail", [
-            'sttp' => sap_t_sttp_dtl::where('sttp_id', $id)->get(),
+            'sttp' => $sttp,
             'id' => $id,
             'title' => "Transaction Detail STTP"
         ]);
@@ -76,43 +79,55 @@ class transaksiController extends Controller
         ]);
     }
 
-    public function newtransaksiprocess() {
+    public function newtransaksiprocess()
+    {
         $request = request();
-        
-        $sttp = new sap_t_sttp;
-        $sttp->pembuat = Auth::user()->name;
-        //generate random number but not in database
-        $sttp->doc_number = "STTP-".rand(100000, 999999);
-        $sttp->doc_date = Carbon::now();
-        $sttp->po_number = "PO-".rand(100000, 999999);
-        $sttp->project_code = $request->project;
-        $sttp->status = "UNPROCESSED";
-        $sttp->fiscal_year = Carbon::now()->format('Y');
-        $sttp->enter_date = Carbon::now();
-        // $sttp->started_at = Carbon::now();
-        $sttp->save();
-        
 
-        foreach($request->items as $item) {
-            $sttp_dtl = new sap_t_sttp_dtl;
-            $sttp_dtl->sttp_id = $sttp->id;
-            $sttp_dtl->wbs_code = $item['wbs_code'];
-            $sttp_dtl->material_code = $item['material_code'];
-            $sttp_dtl->material_desc = \App\Models\sap_m_materials::where('material_code', $item['material_code'])->first()->material_desc;
-            $sttp_dtl->line_item = "Line-".rand(100000, 999999);
-            $sttp_dtl->uom = $item['uom'];
-            $sttp_dtl->qty_po = $item['qtypo'];
-            $sttp_dtl->qty_gr_105 = $item['qtylppb'];
-            $sttp_dtl->qty_ncr = $item['qtyncr'];
-            $sttp_dtl -> qty_warehouse = 0;
-            $sttp_dtl->save();
+        try {
+            DB::beginTransaction();
+            $sttp = new sap_t_sttp;
+            $sttp->pembuat = Auth::user()->name;
+            //generate random number but not in database
+            $sttp->doc_number = "STTP-" . rand(100000, 999999);
+            $sttp->doc_date = Carbon::now();
+            $sttp->po_number = "PO-" . rand(100000, 999999);
+            $sttp->project_code = $request->project;
+            $sttp->status = "UNPROCESSED";
+            $sttp->fiscal_year = Carbon::now()->format('Y');
+            $sttp->enter_date = Carbon::now();
+            // $sttp->started_at = Carbon::now();
+            $sttp->save();
+
+
+            foreach ($request->items as $item) {
+                $material = sap_m_materials::where('material_code', $item['material_code'])->first();
+                $uom = sap_m_uoms::where('id', $material->uom_id)->first();
+                $sttp_dtl = new sap_t_sttp_dtl;
+                $sttp_dtl->sttp_id = $sttp->id;
+                $sttp_dtl->wbs_code = $request->wbs;
+                $sttp_dtl->material_code = $item['material_code'];
+                $sttp_dtl->material_desc = \App\Models\sap_m_materials::where('material_code', $item['material_code'])->first()->material_desc;
+                $sttp_dtl->line_item = "Line-" . rand(100000, 999999);
+                $sttp_dtl->uom = $uom->id;
+                $sttp_dtl->qty_po = $item['qtypo'];
+                $sttp_dtl->qty_gr_105 = $item['qtylppb'];
+                $sttp_dtl->qty_ncr = $item['qtyncr'];
+                $sttp_dtl->qty_warehouse = 0;
+                $sttp_dtl->save();
+            }
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data berhasil disimpan',
+                'data' => $request->items
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
         }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data berhasil disimpan',
-            'data' => $request->items
-        ]);
     }
 
     public function createSTTP()

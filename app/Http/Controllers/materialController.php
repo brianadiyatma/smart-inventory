@@ -13,6 +13,7 @@ use App\Models\t_inbound;
 use App\Models\t_outbound;
 use App\Models\t_movement;
 use App\Models\sap_m_material_type;
+use App\Models\sap_m_uoms;
 use App\Models\t_stock;
 use File;
 use DB;
@@ -28,68 +29,63 @@ class materialController extends Controller
      */
     public function index()
     {
-        return view('materialstock',[
+        return view('materialstock', [
             'title' => "Material Stock",
             'data' => t_stock::join('sap_m_plants', 't_stocks.plant_code', '=', 'sap_m_plants.plant_code')
-                 ->join('sap_m_storage_locations', 't_stocks.storloc_code', '=', 'sap_m_storage_locations.storage_location_code')
-                 ->join('sap_m_storage_types', 't_stocks.storage_type_code', '=', 'sap_m_storage_types.storage_type_code')
-                 ->select('t_stocks.*', 'sap_m_plants.plant_name as plant_code', 'sap_m_storage_locations.storage_location_name as storloc_code', 'sap_m_storage_types.storage_type_name as storage_type_code')
-                 ->get()
+                ->join('sap_m_storage_locations', 't_stocks.storloc_code', '=', 'sap_m_storage_locations.storage_location_code')
+                ->join('sap_m_storage_types', 't_stocks.storage_type_code', '=', 'sap_m_storage_types.storage_type_code')
+                ->select('t_stocks.*', 'sap_m_plants.plant_name as plant_code', 'sap_m_storage_locations.storage_location_name as storloc_code', 'sap_m_storage_types.storage_type_name as storage_type_code')
+                ->get()
         ]);
     }
 
     public function getFileTransaction($namafile)
     {
-        $path  = storage_path('app/inbound/'.$namafile);
-        $path1  = storage_path('app/outbound/'.$namafile);
+        $path  = storage_path('app/inbound/' . $namafile);
+        $path1  = storage_path('app/outbound/' . $namafile);
         $path2  = public_path('corrupt.png');
 
 
         if (file_exists($path)) {
-        $type  = File::mimeType($path);
-        $file = File::get($path);
-        return 'data:image/'.$type.';base64,'.base64_encode($file).'';
-        }
-        
-        elseif(file_exists($path1)) {
-        $type1  = File::mimeType($path1);
-        $file1 = File::get($path1);
-        return 'data:image/'.$type1.';base64,'.base64_encode($file1).'';
-        }
-
-        else{
-        $type2  = File::mimeType($path2);
-        $file2 = File::get($path2);
-        return 'data:image/'.$type2.';base64,'.base64_encode($file2).'';
+            $type  = File::mimeType($path);
+            $file = File::get($path);
+            return 'data:image/' . $type . ';base64,' . base64_encode($file) . '';
+        } elseif (file_exists($path1)) {
+            $type1  = File::mimeType($path1);
+            $file1 = File::get($path1);
+            return 'data:image/' . $type1 . ';base64,' . base64_encode($file1) . '';
+        } else {
+            $type2  = File::mimeType($path2);
+            $file2 = File::get($path2);
+            return 'data:image/' . $type2 . ';base64,' . base64_encode($file2) . '';
         }
     }
 
     public function detail($id)
     {
-        $matcod = t_stock::where('id',$id)->first();
-        $bpms = t_outbound::join('sap_t_bpms','bpm_id','=','sap_t_bpms.id')->select([DB::RAW('qty_out as qty') ,'doc_number','posting_date','photo_url' ,DB::RAW("'Outbound' as `type`")])->where('material_code',$matcod->material_code);
-        $sttp = t_inbound::join('sap_t_sttps','sttp_id','=','sap_t_sttps.id')->select([DB::RAW('qty_in as qty'),'doc_number','posting_date','photo_url',DB::RAW("'Inbound' as `type`")])->where('material_code',$matcod->material_code);
-        
+        $matcod = t_stock::where('id', $id)->first();
+        $bpms = t_outbound::join('sap_t_bpms', 'bpm_id', '=', 'sap_t_bpms.id')->select([DB::RAW('qty_out as qty'), 'doc_number', 'posting_date', 'photo_url', DB::RAW("'Outbound' as `type`")])->where('material_code', $matcod->material_code);
+        $sttp = t_inbound::join('sap_t_sttps', 'sttp_id', '=', 'sap_t_sttps.id')->select([DB::RAW('qty_in as qty'), 'doc_number', 'posting_date', 'photo_url', DB::RAW("'Inbound' as `type`")])->where('material_code', $matcod->material_code);
+
         $unitrans = $bpms
-                ->union($sttp)
-                ->orderBy('posting_date','DESC')
-                ->get();
-                // echo $unitrans;
+            ->union($sttp)
+            ->orderBy('posting_date', 'DESC')
+            ->get();
+        // echo $unitrans;
         foreach ($unitrans as $pict) {
-            
-        if ($pict->photo_url == NULL) {
-            $pict->foto = '';
-        }
-        else{
-            $pict->foto = $this->getFileTransaction($pict->photo_url);
-        }
+
+            if ($pict->photo_url == NULL) {
+                $pict->foto = '';
+            } else {
+                $pict->foto = $this->getFileTransaction($pict->photo_url);
+            }
         }
 
 
 
-        return view('material_dtl',[
+        return view('material_dtl', [
             'title' => "Detail Material",
-            'data' => t_stock::where('id',$id)->get(),
+            'data' => t_stock::where('id', $id)->get(),
             'dtltbl' => $unitrans,
             'id' => $id
         ]);
@@ -98,7 +94,7 @@ class materialController extends Controller
     public function preview(request $request)
     {
         $data = $request->foto;
-        return view('transationimage',[
+        return view('transationimage', [
             'image' => $data
         ]);
     }
@@ -107,22 +103,21 @@ class materialController extends Controller
     {
         $data = DB::table('sap_m_materials')->paginate(10);
         $title = "Material";
-        return view('material', compact('data','title'));
+        return view('material', compact('data', 'title'));
     }
 
     function fetch_data(Request $request)
     {
-         if($request->ajax())
-         {
-          $data = sap_m_materials::query();
-          return Datatables::of('sap_m_materials')->make();
-         }
+        if ($request->ajax()) {
+            $data = sap_m_materials::query();
+            return Datatables::of('sap_m_materials')->make();
+        }
         return view('material_data');
     }
 
     public function group()
     {
-        return view('materialgroup',[
+        return view('materialgroup', [
             'title' => "Material Group",
             'data' => sap_m_material_groups::all()
         ]);
@@ -130,7 +125,7 @@ class materialController extends Controller
 
     public function type()
     {
-        return view('materialtype',[
+        return view('materialtype', [
             'title' => "Material Type",
             'data' => sap_m_material_type::all()
         ]);
@@ -138,7 +133,7 @@ class materialController extends Controller
 
     public function move()
     {
-        return view('materialmove',[
+        return view('materialmove', [
             'title' => "Move Material",
             'data' => t_stock::all()
         ]);
@@ -146,9 +141,9 @@ class materialController extends Controller
 
     public function moved($id)
     {
-        $data = t_stock::where('id',$id)->get();
-        
-        return view('materialmoved',[
+        $data = t_stock::where('id', $id)->get();
+
+        return view('materialmoved', [
             'title' => "Move Material",
             'data' => $data,
             'material_code' => $data->first()->material_code,
@@ -157,17 +152,17 @@ class materialController extends Controller
             'data_bin'    => sap_m_storage_bin::all(),
             'data_location' => sap_m_storage_locations::all(),
             'data_type'     => sap_m_storage_type::all(),
-            'movement' => t_movement::where('material_code',$data->first()->material_code)->get(),
+            'movement' => t_movement::where('material_code', $data->first()->material_code)->get(),
         ]);
     }
 
     public function movedprocess(request $request)
     {
-        $stock = t_stock::where('id',$request->id)->get();
+        $stock = t_stock::where('id', $request->id)->get();
         $stockqty = $stock->first()->qty;
         // echo $stockqtyupdated;
         $request->validate([
-            'qty'=>"required|lte:$stockqty",
+            'qty' => "required|lte:$stockqty",
         ]);
 
         $move = t_movement::create([
@@ -181,18 +176,18 @@ class materialController extends Controller
             'bin_origin_code'       => $stock->first()->bin_code,
             'bin_destination_code'  => request('bin'),
         ]);
-        
+
         $stockupdate = t_stock::find($request->id);
         $stockupdate->qty = $stock->first()->qty - request('qty');
         $stockupdate->save();
 
         $stockqtyupdated = t_stock::where([
-            ['material_code',$stock->first()->material_code],
-            ['bin_code',$request->bin],
-            ['special_stock_number',$stock->first()->special_stock_number]
+            ['material_code', $stock->first()->material_code],
+            ['bin_code', $request->bin],
+            ['special_stock_number', $stock->first()->special_stock_number]
         ])->get();
-        
-        if($stockqtyupdated == '[]'){
+
+        if ($stockqtyupdated == '[]') {
             $create = t_stock::create([
                 'material_code'         => $stock->first()->material_code,
                 'plant_code'            => $stock->first()->plant_code,
@@ -204,8 +199,7 @@ class materialController extends Controller
                 'gr_date'               => $stock->first()->gr_date,
                 'qty'                   => request('qty'),
             ]);
-        }
-        else{
+        } else {
             $stockupdate = t_stock::find($stockqtyupdated->first()->id);
             $stockupdate->qty = $stockqtyupdated->first()->qty + request('qty');
             $stockupdate->save();
@@ -274,5 +268,14 @@ class materialController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function get_uom($materialid)
+    {
+        $data = sap_m_materials::where('material_code', $materialid)->first();
+        $uom = sap_m_uoms::where('id', $data->uom_id)->first();
+        return response()->json([
+            'data' => $uom
+        ]);
     }
 }

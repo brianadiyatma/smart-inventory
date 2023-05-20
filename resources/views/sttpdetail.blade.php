@@ -59,7 +59,7 @@
                       <td>{{ $item->sttp->pembuat }}</td>
                       <td>{{ $item->material->material_code }}</td>
                       <td>{{ $item->material_desc }}</td>
-                      <td>{{ $item->uom }}</td>
+                      <td>{{ $item->uom_name}}</td>
                       <td>{{ $item->qty_po }}</td>
                       <td>{{ $item->qty_gr_105 }}</td>
                       <td>{{ $item->qty_ncr }}</td>
