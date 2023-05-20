@@ -15,38 +15,35 @@ use Illuminate\Support\Facades\Storage;
 
 class profileController extends Controller
 {
-	public function __construct()
+    public function __construct()
     {
         $this->middleware('auth');
     }
-    
+
     public function getFile($namafile)
     {
-        $path  = storage_path('app/pp/'.$namafile);
+        $path  = storage_path('app/pp/' . $namafile);
         $path1 = public_path('pp/blank.jpg');
 
 
         if (file_exists($path)) {
-        $type  = File::mimeType($path);
-        $file = File::get($path);
-        return 'data:image/'.$type.';base64,'.base64_encode($file).'';
-        }
-        
-        else{
-        $type1  = File::mimeType($path1);
-        $file1 = File::get($path1);
-        return 'data:image/'.$type1.';base64,'.base64_encode($file1).'';
+            $type  = File::mimeType($path);
+            $file = File::get($path);
+            return 'data:image/' . $type . ';base64,' . base64_encode($file) . '';
+        } else {
+            $type1  = File::mimeType($path1);
+            $file1 = File::get($path1);
+            return 'data:image/' . $type1 . ';base64,' . base64_encode($file1) . '';
         }
     }
 
     public function profile($id)
     {
-        $data = User::where('id', $id)->get();        
-        
+        $data = User::where('id', $id)->get();
+
         if ($data->first()->url == NULL) {
             $data->first()->foto = '';
-        }
-        else{
+        } else {
             $data->first()->foto = $this->getFile($data->first()->url);
         }
 
@@ -84,13 +81,14 @@ class profileController extends Controller
     //REVISI KESALAHAN = PLANT POSITION DIVISION HARUSNYA KE CODE, BUKAN ID
     public function editprofile(Request $request)
     {
-        $request->validate([
-            'image'=>'mimes:jpeg,jpg,png,gif|max:10000',
-            'email'=>'required|unique:users,email',
-            'nip'=>'required|unique:users,nip',
-        ]);
-
         $item = User::find($request->id);
+
+        if ($item->email != $request->email && $item->nip != $request->nip) {
+            $request->validate([
+                'email' => 'required|unique:users,email',
+                'nip' => 'required|unique:users,nip',
+            ]);
+        }
 
         if ($item->url != 'blank.jpg') {
             Storage::disk('pp')->delete($item->url);
@@ -100,8 +98,8 @@ class profileController extends Controller
             $file = $request->file('image');
             $target_file = $file->getClientOriginalName();
             // Storage::disk('pp')->put('image.txt',$file);
-            Storage::disk('pp')->put($request->nip.$target_file,$request->file('image')->get());
-            $item->url              = $request->nip.basename($_FILES["image"]["name"]);
+            Storage::disk('pp')->put($request->nip . $target_file, $request->file('image')->get());
+            $item->url              = $request->nip . basename($_FILES["image"]["name"]);
         }
 
         // dd(basename($_FILES["image"]["name"]));
@@ -115,7 +113,7 @@ class profileController extends Controller
         $item->save();
 
         return back()->with("status", "Profile telah terganti");
-    }   
+    }
 
     public function user()
     {
@@ -132,9 +130,9 @@ class profileController extends Controller
     public function add(Request $request)
     {
         $request->validate([
-            'image'=>'mimes:jpeg,jpg,png,gif|max:10000',
-            'email'=>'required|unique:users,email',
-            'nip'=>'required|unique:users,nip',
+            'image' => 'mimes:jpeg,jpg,png,gif|max:10000',
+            'email' => 'required|unique:users,email',
+            'nip' => 'required|unique:users,nip',
         ]);
 
         $data = $request->input();
@@ -145,8 +143,8 @@ class profileController extends Controller
             $file = $request->file('image');
             $target_file = $file->getClientOriginalName();
             // Storage::disk('pp')->put('image.txt',$file);
-            Storage::disk('pp')->put($request->nip.$target_file,$request->file('image')->get());
-            $user->url              = $request->nip.basename($_FILES["image"]["name"]);
+            Storage::disk('pp')->put($request->nip . $target_file, $request->file('image')->get());
+            $user->url              = $request->nip . basename($_FILES["image"]["name"]);
         }
         $user->email = $data['email'];
         $user->name = $data['name'];
@@ -175,9 +173,9 @@ class profileController extends Controller
     public function deleteuser($id)
     {
         $item = User::find($id);
-        $roles = DB::table('model_has_roles')->where('model_id',$id);
-        
-        $check = DB::table('model_has_roles')->where([['model_id',$id],['role_id','1']]);
+        $roles = DB::table('model_has_roles')->where('model_id', $id);
+
+        $check = DB::table('model_has_roles')->where([['model_id', $id], ['role_id', '1']]);
         // echo $check;
         if (!is_null($check->first())) {
             return back()->with("error", "Tidak bisa menghapus admin!");
@@ -191,5 +189,14 @@ class profileController extends Controller
         $item->delete();
 
         return back()->with("status", "Data telah terhapus");
+    }
+
+    public function get_jabatan($id)
+    {
+        $user = User::where('id', $id)->first();
+        $data = m_position::where('id', $user->position_code)->first();
+        return response()->json([
+            'data' => $data
+        ]);
     }
 }

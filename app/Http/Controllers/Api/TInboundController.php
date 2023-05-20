@@ -35,12 +35,12 @@ class TInboundController extends Controller
 
     public function store(Request $request)
     {
-        // $sttp_dtl = sap_t_sttp_dtl::with(['sttp','sttp.proyek'])->find($request->id);        
+        // $sttp_dtl = sap_t_sttp_dtl::with(['sttp','sttp.proyek'])->find($request->id);
         $sttp_dtl = DB::table('sap_t_sttp_dtls')
         ->join('sap_t_sttps', 'sap_t_sttps.id', '=', 'sap_t_sttp_dtls.sttp_id')
         ->join('sap_m_projects', 'sap_t_sttps.project_code', '=', 'sap_m_projects.project_code')
         ->where('sap_t_sttp_dtls.id', '=', $request->id)
-        ->first();      
+        ->first();
         // $inbound = t_inbound::where([['sttp_id',$sttp_dtl->sttp_id],['material_code',$request->material_code]])->latest()->first();
         $inbound = DB::table('t_inbounds')->where([['sttp_id',$sttp_dtl->sttp_id],['material_code',$request->material_code]])->latest()->first();
         if(is_null($inbound)){
@@ -48,25 +48,25 @@ class TInboundController extends Controller
         }else{
             $line_item = ++$inbound->line_item  ;
             $line_item = str_pad($line_item,4,"0",STR_PAD_LEFT);
-        }         
+        }
         // $bin = sap_m_storage_bin::with(['plant','type','loc'])->find($request->bin_code);
 
         $bin = DB::table('sap_m_storage_bins')->select('*')
         ->join('sap_m_plants', 'sap_m_plants.plant_code', '=', 'sap_m_storage_bins.plant_id')
         ->join('sap_m_storage_types', 'sap_m_storage_types.storage_type_code', '=', 'sap_m_storage_bins.storage_type_id')
         ->join('sap_m_storage_locations', 'sap_m_storage_locations.id', '=', 'sap_m_storage_bins.storage_location_id')
-        ->where('sap_m_storage_bins.id', '=', $request->bin_code)->first();        
+        ->where('sap_m_storage_bins.id', '=', $request->bin_code)->first();
 
         $request->validate([
-            'id' => 'required|exists:sap_t_sttp_dtls,id',            
-            'material_code' => 'required|exists:sap_m_materials,material_code',           
-            'bin_code' => 'required|exists:sap_m_storage_bins,id',            
+            'id' => 'required|exists:sap_t_sttp_dtls,id',
+            'material_code' => 'required|exists:sap_m_materials,material_code',
+            'bin_code' => 'required|exists:sap_m_storage_bins,id',
             'qty_in' => 'required',
         ]);
-        
+
          try {
             DB::beginTransaction();
-                $inbound = t_inbound::create([           
+                $inbound = t_inbound::create([
                     'sttp_id' => $sttp_dtl->sttp_id,
                     'line_item' => $line_item,
                     'material_code' => $request->material_code,
@@ -77,13 +77,13 @@ class TInboundController extends Controller
                     'qty_in' => $request->qty_in,
                     'posting_date' => now(),
                     'user_id' => auth('sanctum')->user()->id,
-                ]);    
-                // $sttp_dtl->line_item = $line_item;                
+                ]);
+                // $sttp_dtl->line_item = $line_item;
                 // $sttp_dtl->qty_warehouse = empty($sttp_dtl->qty_warehouse) ? $request->qty_in: $sttp_dtl->qty_warehouse+$request->qty_in;
                 // $sttp_dtl->update();
-                
+
                 $stock = t_stock::where([
-                    ['material_code' , $request->material_code], 
+                    ['material_code' , $request->material_code],
                     ['plant_code' , $bin->plant_code],
                     ['storloc_code' , $bin->storage_location_code],
                     ['storage_type_code' , $bin->storage_type_code],
@@ -93,51 +93,51 @@ class TInboundController extends Controller
                     $stock = new t_stock([
                         'material_code' => $request->material_code,
                         'plant_code' => $bin->plant_code,
-                        'storloc_code' =>$bin->storage_location_code,                    
-                        'storage_type_code' => $bin->storage_type_code,  
-                        'bin_code' => $bin->storage_bin_code,                  
+                        'storloc_code' =>$bin->storage_location_code,
+                        'storage_type_code' => $bin->storage_type_code,
+                        'bin_code' => $bin->storage_bin_code,
                         'special_stock' => $sttp_dtl->wbs_code,
-                        'special_stock_number' => $sttp_dtl->project_code,                   
+                        'special_stock_number' => $sttp_dtl->project_code,
                         'qty' =>  $request->qty_in,
-                        'gr_date' => now(),          
+                        'gr_date' => now(),
                     ]);
                     $stock->save();
                 } else {
                     $stock->plant_code =  $bin->plant_code;
-                    $stock->storloc_code = $bin->storage_location_code;                    
-                    $stock->storage_type_code = $bin->storage_type_code;  
-                    $stock->bin_code = $bin->storage_bin_code;                  
+                    $stock->storloc_code = $bin->storage_location_code;
+                    $stock->storage_type_code = $bin->storage_type_code;
+                    $stock->bin_code = $bin->storage_bin_code;
                     $stock->special_stock = $sttp_dtl->wbs_code;
-                    $stock->special_stock_number = $sttp_dtl->project_code;                   
+                    $stock->special_stock_number = $sttp_dtl->project_code;
                     $stock->qty = $stock->qty + $request->qty_in;
-                    $stock->gr_date = now();     
+                    $stock->gr_date = now();
                     $stock->update();
                 }
 
                 $notifikasi = Notifikasi::create([
                     'title' => 'Transaksi Inbound Baru',
                     'body'  => 'Halo ada barang masuk baru nih dengan nomor STTP '.$inbound->sttp->doc_number
-                ]);     
+                ]);
                 $request['title'] = $notifikasi->title;
                 $request['body'] = $notifikasi->body;
-               
+
                 DB::commit();
 
-                $notif = (new NotifikasiController)->notification($request); 
+                $notif = (new NotifikasiController)->notification($request);
 
                 return response()->json([
                 'status' => 'success',
                 'message' => 'Inbound created successfully',
-                ]);               
-           
-          
+                ]);
+
+
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
                 'status' => 'failed',
                 'message' => $e->getMessage(),
             ],500);
-         }       
+         }
     }
 
     public function show($id)
@@ -188,20 +188,20 @@ class TInboundController extends Controller
         try {
             $inbound = t_inbound::findOrFail($id);
             $inbound->delete();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Inbound deleted successfully',
                 'data' => $inbound,
             ]);
         } catch (\Exception $e) {
-            
+
             return response()->json([
                 'status' => 'failed',
-                'message' => 'Data Inbound not found',             
+                'message' => 'Data Inbound not found',
             ],500);
         }
-      
+
     }
 
     public function sttp(){
@@ -210,7 +210,7 @@ class TInboundController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $sttp,
-        ]); 
+        ]);
     }
 
     public function sttpDetail($id){
@@ -228,7 +228,7 @@ class TInboundController extends Controller
             foreach ($inbound as  $i) {
                 $d->material_code == $i->material_code ? $count+= $i->qty_in:'';
             }
-            if($count == $d->qty_po){                
+            if($count == $d->qty_po){
                 $d->status = 'Selesai';
                 $d->qty_inbound = $count;
             }else if($count == 0){
@@ -238,28 +238,28 @@ class TInboundController extends Controller
                 $d->status ='Dalam Proses';
                 $d->qty_inbound = $count;
             }
-            
+
         }
         return response()->json([
             'status' => 'success',
             'data' => $sttp,
-        ]); 
+        ]);
     }
 
     public function sttpTransaksi(Request $request){
         // $sttp = sap_t_sttp::where('id',$id)->with([
         // 'details'=> function($query) use ($id,$wbs,$code) {
-        //     $query->where([                 
+        //     $query->where([
         //         ['material_code' , $code],
         //         // ['wbs_code' , $wbs],
         //     ]);
         // },
         // 'inbounds'=> function($query) use ($id,$wbs,$code) {
-        //     $query->where([                 
+        //     $query->where([
         //         ['material_code' , $code],
         //         // ['wbs_code' , $wbs],
         //     ])->groupBy(['material_code','sttp_id']);
-        // }])->get();        
+        // }])->get();
         $detail = sap_t_sttp_dtl::where([['sttp_id',$request->id],['material_code',$request->code],['wbs_code',$request->wbs]])->first();
         if(is_null($detail)){
             return response()->json([
@@ -271,13 +271,13 @@ class TInboundController extends Controller
         $detail['qty_in'] = $inbound;
         // $detail['qty_left'] = $detail->qty_po-$inbound;
         $detail->qty_po-$inbound < 0 ? $detail['qty_left'] = 0 : $detail['qty_left'] = $detail->qty_po-$inbound;
-                   
+
         return response()->json([
             'status' => 'success',
             'data' => $detail,
-        ]); 
+        ]);
     }
-    
+
     public function sttpSelesai($id){
         try {
             $sttp = sap_t_sttp::findOrFail($id);
@@ -293,8 +293,5 @@ class TInboundController extends Controller
                 'message' => $e->getMessage(),
             ]);
         }
-        
-        
-        
     }
 }
