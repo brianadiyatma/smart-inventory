@@ -88,6 +88,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/get-wbs/{projectid}', 'App\Http\Controllers\proyekController@wbs');
     Route::get('/get-uom/{materialid}', 'App\Http\Controllers\materialController@get_uom');
     Route::get('/get-jabatan/{id}', 'App\Http\Controllers\profileController@get_jabatan');
+    Route::get('/material-stock/{wbs}', 'App\Http\Controllers\materialController@get_material_stock');
+
+
+    Route::post('/new-transaksi-bpm', 'App\Http\Controllers\transaksiController@newtransaksibpmprocess');
 });
 
 Auth::routes();

@@ -394,11 +394,6 @@ class TransactionController extends Controller
                 $stock->qty == 0 ? $stock->update() : $stock->update();
             }
 
-
-
-
-
-            $notif = (new NotifikasiController)->notification($request);
             $bpm = sap_t_bpm::find($bpm_dtl->bpm_id);
             if ($bpm->status == 'UNPROCESSED') {
                 $bpm->status = 'ON PROCESS';
@@ -426,32 +421,17 @@ class TransactionController extends Controller
 
             $reserv = $bpm->details->first()->reservation_number;
             $storeloc = $bpm->storage_location_code;
-
-            $api_url = env('SAP_API_URL', 'google.com') . '/bpm/transfer-posting-bpm/' . $reserv . '/' . $storeloc;
-
-            $client = new Client([
-                'headers' => ['Content-Type' => 'application/json']
+            $bpm->status = 'PROCESSED';
+            $bpm->finished_at = now();
+            $bpm->update();
+            $notifikasi = Notifikasi::create([
+                'title' => 'BPM Document Finished',
+                'body'  => 'Hello, BPM is finished with document number :' . $bpm->doc_number
             ]);
-
-            $response = $client->get($api_url, []);
-            $status = $response->getBody()->getContents();
-            $json_response = json_decode($status);
-
-            if ($json_response->status_code == 200) {
-                $bpm->status = 'PROCESSED';
-                $bpm->finished_at = now();
-                $bpm->update();
-                $notifikasi = Notifikasi::create([
-                    'title' => 'BPM Document Finished',
-                    'body'  => 'Hello, BPM is finished with document number :' . $bpm->doc_number
-                ]);
-                $notifikasi->user()->attach(User::all()->pluck('id'), ['status' => 'unread', 'created_at' => now(), 'updated_at' => now()]);
-            }
+            $notifikasi->user()->attach(User::all()->pluck('id'), ['status' => 'unread', 'created_at' => now(), 'updated_at' => now()]);
 
             $request['title'] = $notifikasi->title;
             $request['body'] = $notifikasi->body;
-
-            $notif = (new NotifikasiController)->notification($request);
 
             return response()->json([
                 'status' => 'success',

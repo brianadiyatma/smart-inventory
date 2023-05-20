@@ -1,23 +1,35 @@
-$('#material').on('change', function (e) {
-    e.preventDefault();
-    var material = $(this).val();
+    $('#submit-bpm').on('click', function(e) {
+        e.preventDefault();
+        var project = $('select[name="project_bpm"]').val();
+        var wbs = $('select[name="wbs_bpm"]').val();
+        var data = {
+            project: project,
+            wbs:wbs,
+            items: itemsBpm
 
-    $.ajax({
-        url: '/get-uom/' + material,
-        type: 'GET',
-        success: function (data) {
-            console.log(data);
-            $('select[name="uom"]').empty();
-            $.each(data.data, function (key, value) {
-                $('select[name="uom"]').append('<option value="' + value.id + '">' + value.uom_name + ' : ' + value.uom_code + '</option>');
-            });
-        },
-        error: function () {
-            Swal.fire('Data Gagal Tidak Ditemukan ').then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/new-transaksi';
-                }
-            });
-        }
-    })
- })
+        };
+        console.log(data);
+        $.ajax({
+            url: '/new-transaksi-bpm',
+            type: 'POST',
+            data: data,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(data) {
+                Swal.fire('Data Berhasil Ditambahkan').then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/transaksi';
+                    }
+                });
+                clearAllForm();
+            },
+            error: function(data) {
+                Swal.fire('Data Gagal Ditambahkan').then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/transaksi';
+                    }
+                });
+            }
+        });
+    });

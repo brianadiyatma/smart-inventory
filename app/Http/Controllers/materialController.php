@@ -278,4 +278,12 @@ class materialController extends Controller
             'data' => $uom
         ]);
     }
+
+    public function get_material_stock($wbs)
+    {
+        $data = t_stock::where('special_stock_number', $wbs)->join('sap_m_materials', 't_stocks.material_code', '=', 'sap_m_materials.material_code')->get();
+        return response()->json([
+            'data' => $data
+        ]);
+    }
 }
