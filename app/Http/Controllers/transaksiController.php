@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use App\Models\sap_t_sttp;
 use App\Models\sap_t_sttp_dtl;
@@ -14,6 +15,7 @@ use App\Models\sap_m_project;
 use App\Models\sap_m_wbs;
 use App\Models\sap_m_uoms;
 use App\Models\t_stock;
+use App\Models\User;
 use Faker\Generator;
 use Carbon\Carbon;
 use Auth;
@@ -113,9 +115,15 @@ class transaksiController extends Controller
                 $bpm_dtl->requirement_qty = $item['qtypo'];
                 $bpm_dtl->uom_code = $uom->uom_code;
                 $bpm_dtl->save();
-
-                DB::commit();
             }
+            $notifikasi = Notifikasi::create([
+                'title' => 'New BPM Document',
+                'body'  => 'New BPM Document Has Been Created:' . $bpm->doc_number
+            ]);
+            $notifikasi->user()->attach(User::all()->pluck('id'), ['status' => 'unread', 'created_at' => now(), 'updated_at' => now()]);
+
+
+            DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -161,6 +169,13 @@ class transaksiController extends Controller
                 $sttp_dtl->qty_warehouse = 0;
                 $sttp_dtl->save();
             }
+
+            $notifikasi = Notifikasi::create([
+                'title' => 'New STTP Document',
+                'body'  => 'New STTP Document Has Been Created:' . $sttp->doc_number
+            ]);
+            $notifikasi->user()->attach(User::all()->pluck('id'), ['status' => 'unread', 'created_at' => now(), 'updated_at' => now()]);
+
             DB::commit();
             return response()->json([
                 'status' => 'success',

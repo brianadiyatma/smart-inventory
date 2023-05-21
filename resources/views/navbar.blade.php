@@ -71,7 +71,8 @@
             </p>
           </a>
         </li>
-        <li class="nav-item">
+        @cannot("Operator")
+            <li class="nav-item">
           <a href="/materialmove" class="nav-link">
             <i class="nav-icon fas fa-edit"></i>
             <p>
@@ -79,6 +80,7 @@
             </p>
           </a>
         </li>
+        @endcannot
         <li class="nav-item">
           <a href="/" class="nav-link">
             <i class="nav-icon fas fa-book"></i>
@@ -88,12 +90,14 @@
             </p>
           </a>
           <ul class="nav nav-treeview">
-            <li class="nav-item">
+            @can("Admin")
+                <li class="nav-item">
               <a href="/new-transaksi" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
                 <p>New Transaction</p>
               </a>
             </li>
+            @endcan
             <li class="nav-item">
               <a href="/transaksi" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
@@ -205,22 +209,24 @@
         </li>
         @endcan
         <li class="nav-item">
-          <a href="/" class="nav-link">
+          @cannot('Operator')
+            <a href="/" class="nav-link">
             <i class="nav-icon fas fa-file"></i>
             <p>
               Report
               <i class="right fas fa-angle-left"></i>
             </p>
           </a>
+          @endcannot
           <ul class="nav nav-treeview">
             <li class="nav-item">
               <a href="/generate" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Generate Monthly Report</p>
+                <p>Generate Report</p>
               </a>
             </li>
             <li class="dropdown-divider"></li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
               <a href="/report1" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
                 <p>STTP & BPM Report</p>
@@ -231,7 +237,7 @@
                 <i class="far fa-circle nav-icon"></i>
                 <p>Inbound & Outbound Report</p>
               </a>
-            </li>
+            </li> --}}
             <li class="dropdown-divider"></li>
           </ul>
         </li>
