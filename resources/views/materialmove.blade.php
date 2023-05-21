@@ -27,6 +27,7 @@
                         <th></th>
                         <th>No. </th>
                         <th>Material Code</th>
+                        <th>Material Name</th>
                         <th>Stock</th>
                         <th>Plant</th>
                         <th>Location</th>
@@ -40,6 +41,7 @@
                         <td><a href="/materialmoved/{{ $item->id }}"><i class="nav-icon fas fa-edit"></i></a></td>
                         <td>{{ $index++ }}</td>
                         <td>{{ $item->Rmaterial->material_code }}</td>
+                        <td>{{ $item->Rmaterial->material_desc }}</td>
                         <td>{{ $item->qty }}</td>
                         <td>{{ $item->plant_code }}</td>
                         <td>{{ $item->storloc_code }}</td>

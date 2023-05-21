@@ -90,8 +90,6 @@ class proyekController extends Controller
     public function wbs($projectid)
     {
         $project = sap_m_project::where('project_code', $projectid)->first();
-
-
         return response()->json(
             [
                 'data' => sap_m_wbs::where('project_id', $project->id)->get()

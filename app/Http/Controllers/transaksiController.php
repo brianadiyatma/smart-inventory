@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use App\Models\sap_t_sttp;
 use App\Models\sap_t_sttp_dtl;
@@ -13,6 +14,8 @@ use App\Models\sap_m_materials;
 use App\Models\sap_m_project;
 use App\Models\sap_m_wbs;
 use App\Models\sap_m_uoms;
+use App\Models\t_stock;
+use App\Models\User;
 use Faker\Generator;
 use Carbon\Carbon;
 use Auth;
@@ -43,7 +46,7 @@ class transaksiController extends Controller
     public function sttpdetail($id)
     {
         $sttp = sap_t_sttp_dtl::where('sttp_id', $id)
-            ->join('sap_m_uoms', 'sap_t_sttp_dtls.uom', '=', 'sap_m_uoms.id',)->get();  
+            ->join('sap_m_uoms', 'sap_t_sttp_dtls.uom', '=', 'sap_m_uoms.id',)->get();
         return view("sttpdetail", [
             'sttp' => $sttp,
             'id' => $id,
@@ -77,6 +80,57 @@ class transaksiController extends Controller
             'data_UOM' => sap_m_uoms::all(),
 
         ]);
+    }
+
+    public function newtransaksibpmprocess()
+    {
+        try {
+            DB::beginTransaction();
+            $request = request();
+            $bpm = new sap_t_bpm;
+            $bpm->pembuat = Auth::user()->name;
+            //generate random number but not in database
+            $bpm->doc_number = "BPM-" . rand(100000, 999999);
+            $bpm->doc_date = Carbon::now();
+            $bpm->status = "UNPROCESSED";
+            $bpm->fiscal_year = Carbon::now()->format('Y');
+            $bpm->enter_date = Carbon::now();
+            // $bpm->started_at = Carbon::now();
+            $bpm->save();
+
+            foreach ($request->items as $item) {
+                $material = sap_m_materials::where('material_code', $item['material_code'])->first();
+                $uom = sap_m_uoms::where('id', $material->uom_id)->first();
+                $stock = t_stock::where('material_code', $item['material_code'])
+                    ->where('special_stock_number', $request->wbs)
+                    ->first();
+                $bpm_dtl = new sap_t_bpm_dtl;
+                $bpm_dtl->bpm_id = $bpm->id;
+                $bpm_dtl->reservation_number = rand(10000, 99999);
+                $bpm_dtl->item = "Line-" . rand(100000, 999999);
+                $bpm_dtl->wbs_code = $request->wbs;
+                $bpm_dtl->material_code = $item['material_code'];
+                $bpm_dtl->plant_code = $stock->plant_code;
+                $bpm_dtl->requirement_date = $item['date'];
+                $bpm_dtl->requirement_qty = $item['qtypo'];
+                $bpm_dtl->uom_code = $uom->uom_code;
+                $bpm_dtl->save();
+            }
+            $notifikasi = Notifikasi::create([
+                'title' => 'New BPM Document',
+                'body'  => 'New BPM Document Has Been Created:' . $bpm->doc_number
+            ]);
+            $notifikasi->user()->attach(User::all()->pluck('id'), ['status' => 'unread', 'created_at' => now(), 'updated_at' => now()]);
+
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     public function newtransaksiprocess()
@@ -115,6 +169,13 @@ class transaksiController extends Controller
                 $sttp_dtl->qty_warehouse = 0;
                 $sttp_dtl->save();
             }
+
+            $notifikasi = Notifikasi::create([
+                'title' => 'New STTP Document',
+                'body'  => 'New STTP Document Has Been Created:' . $sttp->doc_number
+            ]);
+            $notifikasi->user()->attach(User::all()->pluck('id'), ['status' => 'unread', 'created_at' => now(), 'updated_at' => now()]);
+
             DB::commit();
             return response()->json([
                 'status' => 'success',

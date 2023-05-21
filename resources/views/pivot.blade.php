@@ -36,7 +36,9 @@
                 <div class="card-header p-2">
                   <ul class="nav nav-pills">
                     <li class="nav-item"><a class="nav-link active" href="#activity" data-toggle="tab">Bin Management</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Add Bin Management</a></li>
+                    @can("Admin")
+                        <li class="nav-item"><a class="nav-link" href="#settings" data-toggle="tab">Add Bin Management</a></li>
+                    @endcan
                   </ul>
                 </div><!-- /.card-header -->
 
@@ -59,10 +61,10 @@
                             @foreach($data as $item)
                             <tr>
                               <td>{{ $index++ }}</td>
-                              <td>{{ $item->plant_code }}</td>
-                              <td>{{ $item->storage_loc_code }}</td>
-                              <td>{{ $item->storage_type_code }}</td>
-                              <td>{{ $item->storage_bin_code }}</td>
+                              <td>{{ $item->plant_name}}</td>
+                              <td>{{ $item->storage_location_name }}</td>
+                              <td>{{ $item->storage_type_name }}</td>
+                              <td>{{ $item->storage_bin_name }}</td>
                               <td>
                                   <button class="qrcode btn btn-outline-secondary" data-qr="{{ $item->plant_code }}/{{ $item->storage_loc_code }}/{{ $item->storage_type_code }}/{{ $item->storage_bin_code }}" data-toggle="modal" data-target="#modal-default">Generate QR</button>
                               </td>
@@ -169,7 +171,7 @@
 
 <script type="text/javascript">
   $('.qrcode').click(function(){
-    
+
     var qr = $(this).attr('data-qr')
 
     $.ajax({

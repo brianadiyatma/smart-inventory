@@ -29,13 +29,15 @@ class materialController extends Controller
      */
     public function index()
     {
+        $stock = t_stock::join('sap_m_plants', 't_stocks.plant_code', '=', 'sap_m_plants.plant_code')
+            ->join('sap_m_storage_locations', 't_stocks.storloc_code', '=', 'sap_m_storage_locations.storage_location_code')
+            ->join('sap_m_storage_types', 't_stocks.storage_type_code', '=', 'sap_m_storage_types.storage_type_code')
+            ->select('t_stocks.*', 'sap_m_plants.plant_name as plant_code', 'sap_m_storage_locations.storage_location_name as storloc_code', 'sap_m_storage_types.storage_type_name as storage_type_code')
+            ->get();
+
         return view('materialstock', [
             'title' => "Material Stock",
-            'data' => t_stock::join('sap_m_plants', 't_stocks.plant_code', '=', 'sap_m_plants.plant_code')
-                ->join('sap_m_storage_locations', 't_stocks.storloc_code', '=', 'sap_m_storage_locations.storage_location_code')
-                ->join('sap_m_storage_types', 't_stocks.storage_type_code', '=', 'sap_m_storage_types.storage_type_code')
-                ->select('t_stocks.*', 'sap_m_plants.plant_name as plant_code', 'sap_m_storage_locations.storage_location_name as storloc_code', 'sap_m_storage_types.storage_type_name as storage_type_code')
-                ->get()
+            'data' => $stock
         ]);
     }
 
@@ -133,9 +135,18 @@ class materialController extends Controller
 
     public function move()
     {
+        $stock = t_stock::where('qty', '>', 0)
+            ->join('sap_m_materials', 't_stocks.material_code', '=', 'sap_m_materials.material_code')
+            ->join('sap_m_plants', 't_stocks.plant_code', '=', 'sap_m_plants.plant_code')
+            ->join('sap_m_storage_locations', 't_stocks.storloc_code', '=', 'sap_m_storage_locations.storage_location_code')
+            ->join('sap_m_storage_types', 't_stocks.storage_type_code', '=', 'sap_m_storage_types.storage_type_code')
+            ->select('t_stocks.*', 'sap_m_plants.plant_name as plant_code', 'sap_m_storage_locations.storage_location_name as storloc_code', 'sap_m_storage_types.storage_type_name as storage_type_code')
+            ->get();
+        // dd($stock);
+
         return view('materialmove', [
             'title' => "Move Material",
-            'data' => t_stock::all()
+            'data' => $stock,
         ]);
     }
 
@@ -276,6 +287,14 @@ class materialController extends Controller
         $uom = sap_m_uoms::where('id', $data->uom_id)->first();
         return response()->json([
             'data' => $uom
+        ]);
+    }
+
+    public function get_material_stock($wbs)
+    {
+        $data = t_stock::where('special_stock_number', $wbs)->join('sap_m_materials', 't_stocks.material_code', '=', 'sap_m_materials.material_code')->get();
+        return response()->json([
+            'data' => $data
         ]);
     }
 }
