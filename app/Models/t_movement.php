@@ -17,6 +17,9 @@ class t_movement extends Model
     	'special_stock_number',
     	'qty',
     	'bin_origin_code',
-    	'bin_destination_code'
+    	'bin_destination_code',
+		'mover',
+		'description',
+		'file'
     ];
 }

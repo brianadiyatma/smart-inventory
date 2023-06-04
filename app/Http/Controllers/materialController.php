@@ -19,6 +19,8 @@ use File;
 use DB;
 // use Yajra\DataTables\DataTables;
 use DataTables;
+use Facade\FlareClient\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class materialController extends Controller
 {
@@ -176,6 +178,23 @@ class materialController extends Controller
             'qty' => "required|lte:$stockqty",
         ]);
 
+
+        $validatedData = $request->validate([
+            "file" => "required|mimes:pdf|max:10000"
+        ]);
+
+
+        
+        // $name = $request->file('file')->getClientOriginalName();
+
+        //randomize the name
+        // $name = rand(1, 999999999999) . $name;
+
+        $path = $request->file('file')->store('pdfnota/files');
+        $name = explode('/', $path)[2];
+
+
+
         $move = t_movement::create([
             'movement_number'       => '1',
             'material_code'         => $stock->first()->material_code,
@@ -186,7 +205,11 @@ class materialController extends Controller
             'qty'                   => request('qty'),
             'bin_origin_code'       => $stock->first()->bin_code,
             'bin_destination_code'  => request('bin'),
+            'mover'                 => Auth::user()->name,
+            'description'           => request('desc'),
+            'file' => $name,
         ]);
+        // dd($move);
 
         $stockupdate = t_stock::find($request->id);
         $stockupdate->qty = $stock->first()->qty - request('qty');
@@ -218,6 +241,15 @@ class materialController extends Controller
 
 
         return back();
+    }
+
+    public function download_nota($nota)
+    {
+        $file = storage_path() . "/app/pdfnota/files/" . $nota;
+        $headers = array(
+            'Content-Type: application/pdf',
+        );
+        return response()->download($file, $nota, $headers);
     }
 
     public function create()

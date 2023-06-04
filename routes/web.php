@@ -93,6 +93,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::post('/new-transaksi-bpm', 'App\Http\Controllers\transaksiController@newtransaksibpmprocess');
+    Route::get('/download-nota/{id}', 'App\Http\Controllers\materialController@download_nota');
 });
 
 Auth::routes();

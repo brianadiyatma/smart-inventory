@@ -24,6 +24,8 @@ class TMovement extends Migration
             $table->string('qty');
             $table->string('bin_origin_code');
             $table->string('bin_destination_code');
+            $table->string('mover')->nullable();
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

@@ -30,7 +30,7 @@
                 <!-- /.card-header -->
                 <div class="card-body">
                   @foreach($data as $datas)
-                  <form class="form-horizontal" method="POST" action="/materialmovedprocess">
+                  <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/materialmovedprocess">
                     @csrf
                     <div class="form-group row">
                       <label for="" class="col-sm-2 col-form-label">Bin Code</label>
@@ -54,6 +54,18 @@
                         <input type="" placeholder="{{ $datas->qty }}" class="form-control" name="qty">
                       </div>
                     </div>
+                    <div class="form-group row">
+                      <label for="" class="col-sm-2 col-form-label">Nota Pemindahan</label>
+                      <div class="col-sm-10">
+                        <input type="file" class="form-control" name="file">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="" class="col-sm-2 col-form-label">Description</label>
+                      <div class="col-sm-10">
+                        <textarea  class="form-control" name="desc"> </textarea>
+                      </div>
+                    </div>
                     <input type="" value="{{ $datas->id }}" name="id" hidden>
                     <div class="form-group row">
                       <div class="offset-sm-2 col-sm-10">
@@ -69,6 +81,9 @@
                         <th>From</th>
                         <th>To</th>
                         <th>QTY Moved</th>
+                        <th>Mover</th>
+                        <th>Description</th>
+                        <th>Nota</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -78,6 +93,11 @@
                         <td>{{ $data->bin_origin_code }}</td>
                         <td>{{ $data->bin_destination_code }}</td>
                         <td>{{ $data->qty }}</td>
+                        <td>{{ $data->mover }}</td>
+                        <td>{{ $data->description}}</td>
+                        <td>
+                          <a href="/download-nota/{{ $data->file }}" class="btn-outline-info" >Download</a>
+                        </td>
                       </tr>
                       @endforeach
                     </tbody>
