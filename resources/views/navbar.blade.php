@@ -71,7 +71,7 @@
             </p>
           </a>
         </li>
-        @cannot("Operator")
+        @cannot("Manager")
             <li class="nav-item">
           <a href="/materialmove" class="nav-link">
             <i class="nav-icon fas fa-edit"></i>
